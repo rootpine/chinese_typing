@@ -10,6 +10,7 @@ pygame, xlrd
 
 ## 実行方法
  `$ py typing.py エクセルのパス（拡張子なし） シート名 問題数`
+ 
 例)  `$ py typing.py test Sheet1 5`
 
 ## 画面
