@@ -91,13 +91,22 @@ def render_footer(bg):
 
     return
 
-def play_mp3(word_num):
-    file = './mp3/' + str(word_num+1) + '.mp3'
+def play_mp3(zn):
+    file = './mp3/' +args[2] +'/'+ zn + '.wav'
+
     if os.path.isfile(file):
         pygame.mixer.music.load(file)  # 読み込み
         pygame.mixer.music.play()  # 再生, 引数は再生回数
-
     return
+
+def make_ans(pinyin):
+    ans = sub("ā|á|ǎ|à", 'a', pinyin)
+    ans = sub("ē|é|ě|è", 'e', ans)
+    ans = sub("ī|í|ǐ|ì", 'i', ans)
+    ans = sub("ō|ó|ǒ|ò", 'o', ans)
+    ans = sub("ū|ú|ǔ|ù", 'u', ans)
+    ans = sub("ü|ǖ|ǘ|ǚ|ǜ", 'v', ans)
+    return ans
 
 def run_game(screen, wenti_num, wb, sheet):
     # ゲーム実行
@@ -106,7 +115,7 @@ def run_game(screen, wenti_num, wb, sheet):
 
     zn = sheet.col_values(0)
     pinyin = sheet.col_values(1)
-    ans = sheet.col_values(2)
+    ans = list(map(make_ans, pinyin))
     jp = sheet.col_values(3)
 
     # pinyinのスペースを_に置換
@@ -129,7 +138,7 @@ def run_game(screen, wenti_num, wb, sheet):
     input = pygame.Surface((720, 90))
 
     # Blit
-    play_mp3(word_num)
+    play_mp3(zn[word_num])
     render_footer(bg)
     render_wenti(zn[word_num], jp[word_num], wenti, wenti_cnt, wenti_num)
     render_pinyin(pinyin[word_num], char_color[word_num], input)
@@ -161,14 +170,13 @@ def run_game(screen, wenti_num, wb, sheet):
                             start_quit(key, wenti_num, wb, sheet, score, err)
                             break
                         word_num = num_list[wenti_cnt]
-                        play_mp3(word_num)
+                        play_mp3(zn[word_num])
                         render_wenti(zn[word_num], jp[word_num], wenti, wenti_cnt, wenti_num)
                         screen.blit(wenti, (0, 24))
                 else:
                     err += 1
                 score = ((type_num-err) / type_num) * 100
 
-                header.fill((200, 200, 200))
                 render_pinyin(pinyin[word_num], char_color[word_num], input)
                 screen.blit(input, (0, 88))
                 render_score(err, score, header)
@@ -182,6 +190,7 @@ def start_quit(key, wenti_num, wb, sheet, score, err):
         # initialization
         pygame.display.init()
         pygame.font.init()
+        pygame.mixer.pre_init(16000, -16, 2, 2048) # setup mixer to avoid sound lag, play speed
         pygame.mixer.init() # mp3
         pygame.display.set_caption('Chinese Typing!')
 
@@ -194,11 +203,11 @@ def start_quit(key, wenti_num, wb, sheet, score, err):
     if key == 0 :
         text1 = font.render('Type Chinese Words (^^)v', True, (255, 255, 255), (0, 0, 0))
         text2 = font.render('** _: type space **', True, (255, 255, 255), (0, 0, 0))
-        text_press = font.render('Press Any Key to start_quit', True, (255, 255, 255), (0, 0, 0))
+        text_press = font.render('Press Any Key to start', True, (255, 255, 255), (0, 0, 0))
     else:
         text1 = font.render('your score: ' + str(round(score, 3)), True, (255, 255, 255), (0, 0, 0))
         text2 = font.render('Error: ' + str(err), True, (255, 255, 255), (0, 0, 0))
-        text_press = font.render('Press Any Key to Re-start_quit', True, (255, 255, 255), (0, 0, 0))
+        text_press = font.render('Press Any Key to Re-start', True, (255, 255, 255), (0, 0, 0))
 
     screen.blit(text1, (20, 10))
     screen.blit(text2, (20, 60))
